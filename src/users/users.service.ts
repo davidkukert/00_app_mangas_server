@@ -35,12 +35,37 @@ export class UsersService {
     }
 
     findAll() {
-        return this.prismaService.user.findMany();
+        return this.prismaService.user.findMany({
+            select: {
+                id: true,
+                username: true,
+                createdAt: true,
+                updatedAt: true,
+                roles: {
+                    select: {
+                        name: true,
+                        description: true,
+                    },
+                },
+            },
+        });
     }
 
     findOne(id: string) {
         return this.prismaService.user.findUnique({
             where: { id },
+            select: {
+                id: true,
+                username: true,
+                createdAt: true,
+                updatedAt: true,
+                roles: {
+                    select: {
+                        name: true,
+                        description: true,
+                    },
+                },
+            },
         });
     }
 
@@ -70,6 +95,13 @@ export class UsersService {
     findByUsername(username: string) {
         return this.prismaService.user.findUnique({
             where: { username },
+            include: {
+                roles: {
+                    include: {
+                        permissions: true,
+                    },
+                },
+            },
         });
     }
 }
