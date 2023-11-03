@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -99,6 +100,19 @@ export class UsersService {
     findByUsername(username: string) {
         return this.prismaService.user.findUnique({
             where: { username },
+            include: {
+                roles: {
+                    include: {
+                        permissions: true,
+                    },
+                },
+            },
+        });
+    }
+
+    findUnique(where: Prisma.UserWhereUniqueInput) {
+        return this.prismaService.user.findUnique({
+            where,
             include: {
                 roles: {
                     include: {

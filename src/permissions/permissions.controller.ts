@@ -7,6 +7,7 @@ import {
     Param,
     Delete,
     UseGuards,
+    BadRequestException,
 } from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
@@ -22,7 +23,15 @@ export class PermissionsController {
 
     @RequirePermissions({ permissions: ['permission_create'] })
     @Post()
-    create(@Body() data: CreatePermissionDto) {
+    async create(@Body() data: CreatePermissionDto) {
+        const permission = await this.permissionsService.findUnique({
+            name: data.name,
+        });
+
+        if (permission) {
+            throw new BadRequestException('Permission already exists');
+        }
+
         return this.permissionsService.create(data);
     }
 
@@ -40,7 +49,16 @@ export class PermissionsController {
 
     @RequirePermissions({ permissions: ['permission_update'] })
     @Patch(':id')
-    update(@Param('id') id: string, @Body() data: UpdatePermissionDto) {
+    async update(@Param('id') id: string, @Body() data: UpdatePermissionDto) {
+        const permission = await this.permissionsService.findUnique({
+            name: data.name,
+            AND: { NOT: { id } },
+        });
+
+        if (permission) {
+            throw new BadRequestException('Permission already exists');
+        }
+
         return this.permissionsService.update(id, data);
     }
 

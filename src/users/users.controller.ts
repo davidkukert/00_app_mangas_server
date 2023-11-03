@@ -44,7 +44,20 @@ export class UsersController {
     @UseGuards(JwtAuthGuard, AuthorizationGuard)
     @RequirePermissions({ permissions: ['user_update'] })
     @Patch(':id')
-    update(@Param('id') id: string, @Body() data: UpdateUserDto) {
+    async update(@Param('id') id: string, @Body() data: UpdateUserDto) {
+        const user = await this.usersService.findUnique({
+            username: data.username,
+            AND: {
+                NOT: {
+                    id,
+                },
+            },
+        });
+
+        if (user) {
+            throw new BadRequestException('Username already taken');
+        }
+
         return this.usersService.update(id, data);
     }
 

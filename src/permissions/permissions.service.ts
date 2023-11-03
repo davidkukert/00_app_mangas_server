@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PermissionsService {
@@ -48,5 +49,9 @@ export class PermissionsService {
         return this.prismaService.permission.delete({
             where: { id },
         });
+    }
+
+    findUnique(where: Prisma.PermissionWhereUniqueInput) {
+        return this.prismaService.permission.findUnique({ where });
     }
 }

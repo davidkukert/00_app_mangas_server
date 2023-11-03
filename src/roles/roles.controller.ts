@@ -7,6 +7,7 @@ import {
     Param,
     Delete,
     UseGuards,
+    BadRequestException,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -21,7 +22,13 @@ export class RolesController {
     constructor(private readonly rolesService: RolesService) {}
     @RequirePermissions({ permissions: ['role_create'] })
     @Post()
-    create(@Body() data: CreateRoleDto) {
+    async create(@Body() data: CreateRoleDto) {
+        const role = await this.rolesService.findUnique({ name: data.name });
+
+        if (role) {
+            throw new BadRequestException('Role already exists');
+        }
+
         return this.rolesService.create(data);
     }
 
@@ -39,7 +46,16 @@ export class RolesController {
 
     @RequirePermissions({ permissions: ['role_update'] })
     @Patch(':id')
-    update(@Param('id') id: string, @Body() data: UpdateRoleDto) {
+    async update(@Param('id') id: string, @Body() data: UpdateRoleDto) {
+        const role = await this.rolesService.findUnique({
+            name: data.name,
+            AND: { NOT: { id } },
+        });
+
+        if (role) {
+            throw new BadRequestException('Role already exists');
+        }
+
         return this.rolesService.update(id, data);
     }
 
