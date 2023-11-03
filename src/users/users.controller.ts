@@ -7,6 +7,7 @@ import {
     Param,
     Delete,
     UseGuards,
+    BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,7 +21,13 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     @Post()
-    create(@Body() data: CreateUserDto) {
+    async create(@Body() data: CreateUserDto) {
+        const user = await this.usersService.findByUsername(data.username);
+
+        if (user) {
+            throw new BadRequestException('Username already taken');
+        }
+
         return this.usersService.create(data);
     }
 
