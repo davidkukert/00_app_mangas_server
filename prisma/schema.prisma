@@ -2,12 +2,12 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
@@ -17,7 +17,7 @@ model User {
     password String
 
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 
     roles Role[] @relation("roles_users")
 
@@ -27,11 +27,11 @@ model User {
 model Role {
     id String @id @default(uuid())
 
-    name String @unique
+    name        String @unique
     description String
 
     permissions Permission[] @relation("permissions_roles")
-    users User[] @relation("roles_users")
+    users       User[]       @relation("roles_users")
 
     @@map("roles")
 }
@@ -39,10 +39,60 @@ model Role {
 model Permission {
     id String @id @default(uuid())
 
-    name String @unique
+    name        String @unique
     description String
 
     roles Role[] @relation("permissions_roles")
 
     @@map("permissions")
+}
+
+model Project {
+    id String @id @default(uuid())
+
+    title       String
+    titleAlters String[]
+    description String
+    type        ProjectType @default(MANGA)
+    adult       Boolean
+    authors     String[]
+    cover       String?
+    views       Int         @default(0)
+    createAt    DateTime    @default(now())
+    updateAt    DateTime    @default(now()) @updatedAt
+
+    tags     Tag[]     @relation("tags_projects")
+    chapters Chapter[]
+
+    @@map("projects")
+}
+
+enum ProjectType {
+    MANGA
+    MANHWA
+    MANHUA
+}
+
+model Tag {
+    id String @id @default(uuid())
+
+    name String @unique
+
+    projects Project[] @relation("tags_projects")
+
+    @@map("tags")
+}
+
+model Chapter {
+    id String @id @default(uuid())
+
+    number Float
+    title  String
+    images String[]
+
+    project   Project @relation(fields: [projectId], references: [id])
+    projectId String
+
+    @@unique([number, projectId])
+    @@map("chapters")
 }
